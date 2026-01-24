@@ -6,6 +6,7 @@
     "@emotion/react": "^11.7.1",
     "@mantine/core": "^6.0.20",
     "@mantine/hooks": "^6.0.20",
+    "@supabase/supabase-js": "^2.91.1",
     "@tabler/icons-react": "^2.34.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -25,7 +26,6 @@
     "react-scripts": "5.0.1",
     "react-virtualized": "^9.22.5",
     "react-window": "^1.8.9",
-    "supabase-js": "^0.0.1-security",
     "tabler": "^1.0.0-alpha.8",
     "web-vitals": "^2.1.4",
     "webfontloader": "^1.6.28"
