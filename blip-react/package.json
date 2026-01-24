@@ -25,6 +25,7 @@
     "react-scripts": "5.0.1",
     "react-virtualized": "^9.22.5",
     "react-window": "^1.8.9",
+    "supabase": "^2.72.8",
     "tabler": "^1.0.0-alpha.8",
     "web-vitals": "^2.1.4",
     "webfontloader": "^1.6.28"
