@@ -1,3 +1,8 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:da8b990d70dc8544c7eaf81aaba3ce3c3ce942f41777a674daa6a397f1d362c6
-size 192
+{
+  "version": 2,
+  "buildCommand": "cd blip-react && npm ci && npm run build",
+  "outputDirectory": "blip-react/build",
+  "crons": [
+    { "path": "/api/cron", "schedule": "0 0 * * 1" }
+  ]
+}
