@@ -2,25 +2,40 @@ import sys
 sys.dont_write_bytecode = True
 
 import logging
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, TextClassificationPipeline
 from tqdm import tqdm
 from _1tempsqlite import TempArticleDB
 from helper import llmRequester
 
 class TitleClassifier:
-    def __init__(self, temp_db: TempArticleDB, model_path: str):
+    def __init__(self, temp_db: TempArticleDB):
         self.temp_db = temp_db
-        self.tokenizer = AutoTokenizer.from_pretrained("roberta-base")
-        self.model = AutoModelForSequenceClassification.from_pretrained(
-            model_path, local_files_only=True
-        )
+        self.llm = llmRequester()
     
-    def evaluate(self, text):
-        """Classify article title"""
-        pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer)
-        res = pipe(text)[0]
-        label = f"LABEL_{0 if res['label'] == 'LABEL_0' else 1}_{'irrelevant' if res['label'] == 'LABEL_0' else 'relevant'}"
-        return label, res['score']
+    def evaluate(self, title_text: str):
+        # Classify article title, determine if undesireable consequences is the topic of the paper/article
+        domains = "social media, voice assistants, virtual reality, computer vision, robotics, mobile technology, ai decision-making, neuroscience, computational biology, ubiquitous computing"
+        schema = {
+            "name": "title_classification",
+            "schema": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "label": {"type": "string", "enum": ["LABEL_0_irrelevant", "LABEL_1_relevant"]},
+                    "score": {"type": "number", "minimum": 0, "maximum": 1},
+                },
+                "required": ["label", "score"],
+            },
+        }
+
+        messages = [
+            {"role": "system", "content": "Binary classifier for article titles about undesirable consequences of technology."},
+            {"role": "user", "content": f"""Title: {title_text}
+            Return LABEL_1_relevant only if the title clearly signals the discussion of unintended or undesirable consequences of techology on society. 
+             Otherwise LABEL_0_irrelevant. Example technologies include {domains}"""}
+        ]
+
+        out = self.llm.chat(messages=messages, response_format={"type": "json_schema", "json_schema": schema})
+        return out["label"], out["score"]
     
     def process(self):
         """Process all scraped articles"""

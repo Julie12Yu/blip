@@ -1,45 +1,89 @@
-import sys
-sys.dont_write_bytecode = True
-
 import os
+import json
+import logging
 from dotenv import load_dotenv
 from openai import OpenAI
-import logging
 
 load_dotenv()
 
 class llmRequester:
     def __init__(self):
-        """Initialize the GPT client with API key from .env"""
         self.api_key = os.getenv("GPT_KEY")
-        
         if not self.api_key:
             raise ValueError("GPT_KEY not found in .env file")
-        
+
         self.client = OpenAI(api_key=self.api_key)
-        self.model = "gpt-4o-mini"  # or "gpt-4o" for more powerful model
+
+        # Defaults (override via setters if you want)
+        self.model = "gpt-4o-mini"
         self.temperature = 0.1
         self.max_tokens = 512
-        
+
         logging.info("GPT client initialized successfully")
-    
+
+    # ---------- NEW: chat() to match how you're calling it ----------
+    def chat(self, messages, response_format=None, model=None, temperature=None, max_tokens=None):
+        """
+        Wrapper for chat.completions.create that supports response_format json_schema.
+
+        If response_format is provided (e.g. json_schema), this returns a parsed Python object (dict).
+        Otherwise returns plain text.
+        """
+        used_model = model or self.model
+        used_temp = self.temperature if temperature is None else temperature
+        used_max = self.max_tokens if max_tokens is None else max_tokens
+
+        try:
+            kwargs = dict(
+                model=used_model,
+                messages=messages,
+                temperature=used_temp,
+                max_tokens=used_max,
+            )
+            if response_format is not None:
+                kwargs["response_format"] = response_format
+
+            resp = self.client.chat.completions.create(**kwargs)
+            content = (resp.choices[0].message.content or "").strip()
+
+            # If caller asked for structured output, parse JSON
+            if response_format is not None:
+                return self._safe_json_loads(content)
+
+            return content
+
+        except Exception as e:
+            logging.error(f"Error calling OpenAI API in chat(): {e}")
+            raise
+
+    def _safe_json_loads(self, s: str):
+        """
+        Parse JSON content robustly. Handles occasional code-fences.
+        """
+        s = s.strip()
+
+        # Remove common code-fence wrappers if present
+        if s.startswith("```"):
+            # strip ```json ... ```
+            s = s.split("\n", 1)[-1]
+            if s.endswith("```"):
+                s = s.rsplit("```", 1)[0]
+            s = s.strip()
+
+        try:
+            return json.loads(s)
+        except json.JSONDecodeError as e:
+            logging.error(f"Failed to parse JSON. Raw content was:\n{s}")
+            raise
+
+    # ---------- Existing interface you already use ----------
     def run_llama(self, prompt: str, text: str) -> str:
         """
-        Run GPT with the given prompt and text.
-        Maintains the same interface as the original for compatibility.
-        
-        Args:
-            prompt: The prompt template with {text} placeholder
-            text: The text to insert into the prompt
-        
-        Returns:
-            The GPT response as a string
+        Keeps your old interface: fills {text} and returns plain string answer.
         """
+        full_prompt = prompt.replace("{text}", text)
+
         try:
-            # Replace the {text} placeholder in the prompt
-            full_prompt = prompt.replace("{text}", text)
-            
-            # Call OpenAI API
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
@@ -47,42 +91,27 @@ class llmRequester:
                         "role": "system",
                         "content": "You are a helpful assistant that analyzes articles about technology and its societal impacts."
                     },
-                    {
-                        "role": "user",
-                        "content": full_prompt
-                    }
+                    {"role": "user", "content": full_prompt}
                 ],
                 temperature=self.temperature,
                 max_tokens=self.max_tokens
             )
-            
-            # Extract the response text
-            answer = response.choices[0].message.content.strip()
-            
-            return answer
-            
+
+            return (response.choices[0].message.content or "").strip()
+
         except Exception as e:
-            logging.error(f"Error calling GPT API: {e}")
+            logging.error(f"Error calling OpenAI API in run_llama(): {e}")
             raise
-    
+
+    # ---------- Optional setters ----------
     def set_model(self, model: str):
-        """
-        Change the GPT model being used.
-        
-        Options:
-        - "gpt-4o-mini": Faster, cheaper (recommended for your use case)
-        - "gpt-4o": More powerful, more expensive
-        - "gpt-3.5-turbo": Legacy, cheapest
-        """
         self.model = model
         logging.info(f"Model changed to: {model}")
-    
+
     def set_temperature(self, temperature: float):
-        """Set the temperature for response generation (0.0-2.0)"""
         self.temperature = temperature
-    
+
     def set_max_tokens(self, max_tokens: int):
-        """Set the maximum number of tokens in the response"""
         self.max_tokens = max_tokens
 
 

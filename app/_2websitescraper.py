@@ -278,8 +278,8 @@ class ArticleRequester:
             except requests.exceptions.RequestException as e:
                 logging.error(f"Error fetching from NYT API (page {page}): {e}")
                 if response.status_code == 429:  # Rate limit exceeded
-                    logging.warning("Rate limit exceeded, waiting 60 seconds...")
-                    time.sleep(60)
+                    logging.warning("Rate limit exceeded, waiting 30 seconds...")
+                    time.sleep(30)
                 break
             except Exception as e:
                 logging.error(f"Unexpected error with NYT API: {e}")

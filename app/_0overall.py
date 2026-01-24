@@ -1,7 +1,6 @@
 import sys
 sys.dont_write_bytecode = True
 
-import argparse
 import logging
 import os
 from dotenv import load_dotenv
@@ -14,7 +13,7 @@ from _3classifierssummarizer import AspectClassifier
 from _4supabase import SupabaseUploader
 
 
-def main(supabase_url, supabase_key, model_path):
+def main(supabase_url, supabase_key):
     logging.basicConfig(level=logging.INFO)
     
     # Initialize temporary database
@@ -28,7 +27,7 @@ def main(supabase_url, supabase_key, model_path):
         
         # Step 2: Title classification
         logging.info("=== Step 2: Title Classification ===")
-        title_classifier = TitleClassifier(temp_db, model_path)
+        title_classifier = TitleClassifier(temp_db)
         title_classifier.process()
         
         # Step 3: Content filtering
@@ -63,5 +62,4 @@ if __name__ == "__main__":
     load_dotenv()
     supabase_url = os.getenv("SUPABASE_URL")
     supabase_key = os.getenv("SUPABASE_KEY")
-    model_path = "./model"
-    main(supabase_url, supabase_key, model_path)
+    main(supabase_url, supabase_key)
