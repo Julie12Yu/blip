@@ -30,7 +30,7 @@ const HomePage = () => {
                         </button>
                     </div>
                     <div className = "col-auto">
-                        <a href="https://homes.cs.washington.edu/~ypang2/blip_demo.pdf">
+                        <a target='_blank' href="https://homes.cs.washington.edu/~ypang2/blip_demo.pdf">
                             <button className="btn btn-outline-success">
                                 <i className="fas fa-file-alt"></i> &nbsp;
                                 Demo Paper
@@ -38,7 +38,7 @@ const HomePage = () => {
                         </a>
                     </div>
                     <div className = "col-auto">
-                        <a href="https://homes.cs.washington.edu/~ypang2/blip_preprint.pdf">
+                        <a target='_blank'  href="https://homes.cs.washington.edu/~ypang2/blip_preprint.pdf">
                             <button className="btn btn-outline-success">
                                 <i className="fas fa-file-alt"></i> &nbsp;
                                 Full Paper Preprint
@@ -46,7 +46,7 @@ const HomePage = () => {
                         </a>
                     </div>
                     <div className = "col-auto">
-                        <a href="https://github.com/rrrrrrockpang/blip/">
+                        <a target='_blank' href="https://github.com/rrrrrrockpang/blip/">
                             <button className="btn btn-outline-success">
                                 <i className="fab fa-github"></i> &nbsp;
                                 Source Code
