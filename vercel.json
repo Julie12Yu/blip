@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd blip-react && npm ci && npm run build",
+  "buildCommand": "cd blip-react && npm install && npm run build",
   "outputDirectory": "blip-react/build",
   "crons": [
     { "path": "/api/cron", "schedule": "0 0 * * 1" }
