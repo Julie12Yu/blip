@@ -1,14 +1,14 @@
-version: "3.8"
-
 services:
   frontend:
-    build: ./blip-react
+    image: ghcr.io/julie12yu/blip:latest
     container_name: blip-frontend
+    command: npx serve -s /app/frontend/build -l 3000
     ports:
       - "3000:3000"
     restart: unless-stopped
 
   backend:
-    build: ./api
+    image: ghcr.io/julie12yu/blip:latest
     container_name: blip-backend
+    command: python /app/backend/main.py
     restart: unless-stopped
