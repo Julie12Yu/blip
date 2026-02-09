@@ -17,6 +17,13 @@ COPY api/ .
 FROM python:3.11-slim
 WORKDIR /app
 
+# Install Node.js for serving the frontend
+RUN apt-get update && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g serve && \
+    apt-get remove -y curl && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+
 # Copy backend
 COPY --from=backend-build /app/backend /app/backend
 # Copy frontend
@@ -25,4 +32,4 @@ COPY --from=frontend-build /app/frontend/build /app/frontend/build
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
 EXPOSE 3000 8000
-CMD ["sh", "-c", "python /app/backend/main.py & npx serve -s /app/frontend/build -l 3000"]
+CMD ["sh", "-c", "python /app/backend/cron.py & serve -s /app/frontend/build -l 3000"]
