@@ -288,6 +288,70 @@ class ArticleRequester:
         logging.info(f"Added {articles_added} articles from NYT for '{keyword}'")
         return articles_added
     
+    def fetch_from_404media(self):
+        """
+        Fetch articles from 404 Media RSS feed
+        """
+        logging.info("Fetching articles from 404 Media RSS")
+
+        feed_url = "https://www.404media.co/rss/"
+        articles_added = 0
+
+        try:
+            feed = feedparser.parse(feed_url)
+
+            for entry in feed.entries:
+                # Parse publication date (RSS uses struct_time)
+                if not hasattr(entry, "published_parsed"):
+                    continue
+
+                published_date = datetime(*entry.published_parsed[:6])
+
+                # Only include articles from the past week
+                if published_date < self.seven_days_ago:
+                    continue
+
+                article_url = entry.link
+
+                # Deduplication
+                if self.temp_db.article_exists(article_url):
+                    continue
+
+                # Fetch full article text
+                try:
+                    article = Article(article_url)
+                    article.download()
+                    article.parse()
+                    article_text = article.text
+                except Exception as e:
+                    logging.warning(f"Failed to parse 404 Media article {article_url}: {e}")
+                    continue
+
+                # Skip low-content pages
+                if len(article_text) < 100:
+                    continue
+
+                article_data = {
+                    'title': entry.title,
+                    'text': article_text,
+                    'source': '404 Media',
+                    'url': article_url,
+                    'sector': 'technology',
+                    'published_at': published_date.strftime('%Y-%m-%d')
+                }
+
+                self.temp_db.insert_article(article_data)
+                articles_added += 1
+
+            logging.info(f"Added {articles_added} articles from 404 Media")
+            time.sleep(1)  # polite RSS polling
+            return articles_added
+
+        except Exception as e:
+            logging.error(f"Error fetching from 404 Media RSS: {e}")
+            return 0
+
+    
     def fetch_all_sources(self):
         """
         Fetch articles from all sources (NewsAPI, arXiv, Guardian, NYT)
@@ -323,5 +387,11 @@ class ArticleRequester:
             
             logging.info(f"Completed query: {query}")
         
+        # 404 Media
+        logging.info("Fetching from 404 Media...")
+        tot_404 = self.fetch_from_404media()
+        total_added += tot_404
+        logging.info(f"total found from 404 Media: {tot_404}")
+
         logging.info(f"\n=== Total articles added across all sources: {total_added} ===")
         return total_added
