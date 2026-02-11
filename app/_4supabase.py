@@ -40,6 +40,7 @@ class SupabaseUploader:
                     'magazine': article['source'],  # maps to source
                     'url': article['url'],
                     'label': article['sector'],      # maps to sector
+                    'date': article.get('published_at'),  # date per website
                     'gpt_summary': article['gpt3_summary'],
                     'sector': article['gpt3_aspect']  # the classified aspect
                 }

@@ -99,7 +99,7 @@ class TempArticleDB:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT url, title, text, sector, source, gpt3_summary, gpt3_aspect
+                SELECT url, title, text, sector, source, published_at, gpt3_summary, gpt3_aspect
                 FROM articles 
                 WHERE processing_stage = 'classified'
                 AND gpt3_summary IS NOT NULL

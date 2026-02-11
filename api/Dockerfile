@@ -21,5 +21,12 @@ RUN chmod 0644 /etc/cron.d/cronjob && crontab /etc/cron.d/cronjob
 # Create log file
 RUN touch /var/log/cron.log
 
+# Env vars (set at runtime via --env-file .env or -e). See .env.model.
+ENV SUPABASE_URL=
+ENV SUPABASE_KEY=
+ENV GPT_KEY=
+ENV GUARDIAN_API_KEY=
+ENV NYT_API_KEY=
+
 # Run cron + stream logs
 CMD ["sh", "-c", "cron && tail -f /var/log/cron.log"]
