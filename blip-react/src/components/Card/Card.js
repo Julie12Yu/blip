@@ -14,7 +14,7 @@ import {
   IconTrash, IconEdit
 } from '@tabler/icons-react';
 
-function Card({ mode, title, text, gpt_summary, url, sector, magazine, label, onAdd, onRemove, onContribute }) {
+function Card({ mode, title, text, gpt_summary, url, sector, magazine, label, onAdd, onRemove, onContribute, date }) {
   // Function to determine color based on domain/sector
   const getCardHeaderColor = (aspectLabel) => {
     switch(aspectLabel) {
@@ -140,7 +140,7 @@ function Card({ mode, title, text, gpt_summary, url, sector, magazine, label, on
         
 
         <div className="d-flex justify-content-between">
-          <div className="">
+          <div >
             {
               mode !== 'accordion' && 
               <ActionIcon className="bookmark-btn" variant="transparent" color="gray" onClick={onAdd} style={{ display: 'inline-block' }}>
@@ -154,6 +154,7 @@ function Card({ mode, title, text, gpt_summary, url, sector, magazine, label, on
             <ActionIcon className="contribute-card-btn" color="blue" variant="transparent" onClick={onContribute} style={{ display: 'inline-block' }}>
                 <IconEdit size={16}/> {/* This is the edit icon */}
             </ActionIcon>
+            <p className='card-text'>{date}</p>
             
           </div>
           <div className="">

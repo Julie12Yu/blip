@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Cookies from 'js-cookie';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import CardList from './components/CardList/CardList';
 import FilterDropdown from './components/FilterDropdown/FilterDropdown';
+import OrderDropdown from './components/OrderDropdown/OrderDropdown';
 import LogoHeader from './components/LogoHeader/LogoHeader';
 import Bookmarks from './components/Accordion/Accordion';
 import SafetyModal from './components/SafetyModal/SafetyModal';  // Adjust the path if you place it in another directory
@@ -42,6 +43,7 @@ function Blip() {
     const [filteredCards, setFilteredCards] = useState(cards);
     const [domainFilter, setDomainFilter] = useState("");
     const [aspectFilter, setAspectFilter] = useState("");
+    const [order, setOrder] = useState("");
     const [cardsInList, setCardsInList] = useState([]);
     const [searchQuery, setSearchQuery] = useState(""); 
     const [showModal, setShowModal] = useState(false);
@@ -135,13 +137,13 @@ function Blip() {
 
     const fetchMoreData = () => {
         console.log("fetchMoreData called");
-        if (currentCards.length >= filteredCards.length) {
+        if (currentCards.length >= displayCards.length) {
           setHasMore(false);
           return;
         }
         setTimeout(() => {
           setNext(prevNext => prevNext + 100);
-          setCurrentCards(filteredCards.slice(0, next + 100));
+          setCurrentCards(displayCards.slice(0, next + 100));
         }, 1000);
       };
 
@@ -191,9 +193,24 @@ function Blip() {
         // setCurrentCards(filtered.slice(0, next));
     }, [cards, domainFilter, aspectFilter]);
 
+    // When order is set, sort by date (nulls at end). When "none", use filtered order as-is.
+    const displayCards = useMemo(() => {
+        if (!order || order === '') return filteredCards;
+        const sorted = [...filteredCards].sort((a, b) => {
+            const dateA = a.date ? new Date(a.date).getTime() : null;
+            const dateB = b.date ? new Date(b.date).getTime() : null;
+            if (dateA == null && dateB == null) return 0;
+            if (dateA == null) return 1;
+            if (dateB == null) return -1;
+            if (order === 'oldest to newest') return dateA - dateB;
+            return dateB - dateA; // newest to oldest
+        });
+        return sorted;
+    }, [filteredCards, order]);
+
     useEffect(() => {
-        setCurrentCards(filteredCards.slice(0, next));
-    }, [filteredCards, next]);
+        setCurrentCards(displayCards.slice(0, next));
+    }, [displayCards, next]);
     
 
     useEffect(() => {
@@ -358,7 +375,12 @@ function Blip() {
                                     ['user experience', 'health & wellbeing', 'security & privacy', 'access to information & discourse', 'social norms & relationship', 'equality & justice', 'economy', 'politics', 'power dynamics', 'environment & sustainability']
                                 } onChange={setAspectFilter} />
                             </div>
-                            <div className="col-md-4">
+                            <div className="col-md-2">
+                                <OrderDropdown label={""} description="Sort by" options={
+                                    ['oldest to newest', 'newest to oldest']
+                                } onChange={setOrder} />
+                            </div>
+                            <div className="col-md-2">
                                 <SearchBar 
                                 searchQuery={searchQuery} 
                                 setSearchQuery={setSearchQuery} 
