@@ -214,27 +214,45 @@ function Blip() {
     
 
     useEffect(() => {
-        const fetchFromSupabase = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('data')  // your table name
-                .select('*');
-            if (error) {
+        const fetchAllData = async () => {
+          try {
+            const pageSize = 1000;
+            let from = 0;
+            let to = pageSize - 1;
+            let allData = [];
+            let finished = false;
+      
+            while (!finished) {
+              const { data, error } = await supabase
+                .from('data')
+                .select('*')
+                .range(from, to);
+      
+              if (error) {
                 console.error('Error fetching from Supabase:', error);
                 return;
+              }
+      
+              if (data.length === 0) {
+                finished = true;
+              } else {
+                allData = [...allData, ...data];
+                from += pageSize;
+                to += pageSize;
+              }
             }
-
-            const dataWithLabels = data.map(card => ({
-                ...card,
-            }));
-            const shuffled = shuffleArray(dataWithLabels);
+      
+            const shuffled = shuffleArray(allData);
             setCards(shuffled);
-        } catch (err) {
+      
+          } catch (err) {
             console.error('Unexpected error:', err);
-        }
-    };
-    fetchFromSupabase();
-    }, []);
+          }
+        };
+      
+        fetchAllData();
+      }, []);
+      
 
     /** Logic to add and remove cards */ 
     const handleCloseModal = () => {
