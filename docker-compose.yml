@@ -1,14 +1,12 @@
 services:
-  frontend:
-    image: ghcr.io/julie12yu/blip:latest
-    container_name: blip-frontend
-    command: npx serve -s /app/frontend/build -l 3000
+  blip:
+    build:
+      context: .
+      args:
+        REACT_APP_URL: ${REACT_APP_URL}
+        REACT_APP_KEY: ${REACT_APP_KEY}
+    env_file: .env
     ports:
-      - "3000:3000"
-    restart: unless-stopped
-
-  backend:
-    image: ghcr.io/julie12yu/blip:latest
-    container_name: blip-backend
-    command: python /app/backend/main.py
+      - "8001:3000"
+    container_name: blip
     restart: unless-stopped
