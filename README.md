@@ -16,7 +16,7 @@ cp .env.model .env
 
 - **API / old_deployment_stuff images**: Set env at runtime with an env file:
   ```bash
-  docker run --env-file .env your-image
+  docker run --env-file .env -p 8001:3000 -p 8000:8000 --name blip -d ghcr.io/julie12yu/blip:latest
   ```
 - **blip-react image**: React bakes `REACT_APP_*` at build time. Build with args from your env:
   ```bash
