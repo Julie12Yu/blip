@@ -4,6 +4,10 @@ WORKDIR /app/frontend
 COPY blip-react/package*.json ./
 RUN npm install
 COPY blip-react/ .
+ARG REACT_APP_URL
+ARG REACT_APP_KEY
+ENV REACT_APP_URL=$REACT_APP_URL
+ENV REACT_APP_KEY=$REACT_APP_KEY
 RUN npm run build
 
 # ---------- Backend build ----------
